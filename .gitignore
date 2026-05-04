@@ -6,4 +6,5 @@ node_modules/
 .next/
 *.log
 idp-pipeline/db/*.sqlite3
-idp-pipeline/output/
+idp-pipeline/output/approved/
+idp-pipeline/output/exceptions/
