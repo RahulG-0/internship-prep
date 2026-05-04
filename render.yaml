@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: idp-pipeline-api
+    runtime: python
+    rootDir: idp-pipeline
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.routes:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: API_GEMINI_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: DB_PATH
+        value: /var/data/idp_pipeline.sqlite3
+      - key: OUTPUT_DIR
+        value: /var/data/output
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+    disk:
+      name: idp-pipeline-data
+      mountPath: /var/data
+      sizeGB: 1
