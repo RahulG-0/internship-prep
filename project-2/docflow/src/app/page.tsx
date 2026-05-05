@@ -56,6 +56,42 @@ function getConfidenceScores(source: unknown): JsonRecord {
   return source.confidence_scores;
 }
 
+function getReviewFlags(source: unknown): JsonRecord {
+  if (!isRecord(source)) return {};
+  if (isRecord(source.flags)) return source.flags;
+  if (isRecord(source.rule_flags)) return source.rule_flags;
+  return {};
+}
+
+function getReviewReasonText(source: unknown) {
+  const flags = getReviewFlags(source);
+  const reasons: string[] = [];
+
+  if (Array.isArray(flags.validation_errors) && flags.validation_errors.length > 0) {
+    reasons.push("Validation errors");
+  }
+  if (flags.unsupported_document_type === true) reasons.push("Unsupported document type");
+  if (flags.line_items_match_subtotal === false) reasons.push("Invoice subtotal mismatch");
+  if (flags.exceeds_approval_threshold === true) reasons.push("Over approval threshold");
+  if (flags.is_overdue === true) reasons.push("Invoice overdue");
+  if (flags.balances_reconcile === false) reasons.push("Balance mismatch");
+  if (flags.has_large_transactions === true) reasons.push("Large transaction");
+  if (flags.dates_are_sequential === false) reasons.push("Transaction dates out of order");
+  if (flags.dti_exceeds_threshold === true) reasons.push("Debt-to-income too high");
+  if (flags.age_meets_minimum === false) reasons.push("Applicant below minimum age");
+  if (flags.income_supports_loan === false) reasons.push("Income does not support loan");
+
+  if (Array.isArray(flags.missing_required_fields) && flags.missing_required_fields.length > 0) {
+    reasons.push(`Missing fields: ${flags.missing_required_fields.map(String).join(", ")}`);
+  }
+
+  if (Array.isArray(flags.low_confidence_fields) && flags.low_confidence_fields.length > 0) {
+    reasons.push(`Low confidence: ${flags.low_confidence_fields.map(String).join(", ")}`);
+  }
+
+  return reasons.join("; ");
+}
+
 function getFieldRows(source: unknown): FieldRow[] {
   const documentData = getDocumentData(source);
   const confidenceScores = getConfidenceScores(source);
@@ -181,6 +217,11 @@ function JobList({
                   {humanState(job)}
                 </span>
               </div>
+              {getReviewReasonText(job) && (
+                <p className="mt-3 text-xs leading-5 text-amber-800">
+                  {getReviewReasonText(job)}
+                </p>
+              )}
             </button>
           ))
         )}
@@ -433,6 +474,12 @@ export default function Home() {
                   </span>
                 )}
               </div>
+              {selectedRecord && getReviewReasonText(selectedRecord) && (
+                <div className="mt-4 rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                  <span className="font-semibold">Review reason: </span>
+                  {getReviewReasonText(selectedRecord)}
+                </div>
+              )}
             </div>
 
             <FieldTable source={result.data} />
