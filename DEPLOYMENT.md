@@ -3,7 +3,7 @@
 This project has two deployable apps:
 
 - `idp-pipeline`: FastAPI backend for PDF processing.
-- `project-2/docflow`: Next.js frontend.
+- `project 2/docflow`: Next.js frontend.
 
 ## Backend on Render
 
@@ -32,7 +32,7 @@ OUTPUT_DIR=/var/data/output
 ## Frontend on Vercel
 
 1. Import the repository in Vercel.
-2. Set the project root directory to `project-2/docflow`.
+2. Set the project root directory to `project 2/docflow`.
 3. Add this environment variable:
    - `NEXT_PUBLIC_API_BASE_URL`: your Render backend URL, for example `https://your-render-service.onrender.com`.
 4. Deploy.
@@ -50,7 +50,7 @@ uvicorn api.routes:app --reload --host 0.0.0.0 --port 8000
 Frontend:
 
 ```bash
-cd project-2/docflow
+cd "project 2/docflow"
 npm install
 npm run dev
 ```
