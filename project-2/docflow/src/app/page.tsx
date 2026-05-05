@@ -17,6 +17,11 @@ type FieldRow = {
   confidence: number | null;
 };
 
+type ReviewReason = {
+  title: string;
+  detail: string;
+};
+
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -54,6 +59,117 @@ function getDocumentData(source: unknown): JsonRecord | null {
 function getConfidenceScores(source: unknown): JsonRecord {
   if (!isRecord(source) || !isRecord(source.confidence_scores)) return {};
   return source.confidence_scores;
+}
+
+function getReviewFlags(source: unknown): JsonRecord {
+  if (!isRecord(source)) return {};
+  if (isRecord(source.flags)) return source.flags;
+  if (isRecord(source.rule_flags)) return source.rule_flags;
+  return {};
+}
+
+function listValue(value: unknown) {
+  if (Array.isArray(value)) return value.map(String).join(", ");
+  return formatValue(value);
+}
+
+function getReviewReasons(source: unknown): ReviewReason[] {
+  const flags = getReviewFlags(source);
+  const reasons: ReviewReason[] = [];
+
+  if (Array.isArray(flags.validation_errors) && flags.validation_errors.length > 0) {
+    reasons.push({
+      title: "Validation errors",
+      detail: flags.validation_errors.map(String).join("; "),
+    });
+  }
+
+  if (flags.unsupported_document_type === true) {
+    reasons.push({
+      title: "Unsupported document type",
+      detail: "The document could not be classified as an invoice, bank statement, or loan application.",
+    });
+  }
+
+  if (flags.line_items_match_subtotal === false) {
+    reasons.push({
+      title: "Invoice subtotal mismatch",
+      detail: "Line item totals do not match the stated subtotal.",
+    });
+  }
+
+  if (flags.exceeds_approval_threshold === true) {
+    reasons.push({
+      title: "Approval threshold exceeded",
+      detail: "The amount is above the configured approval threshold.",
+    });
+  }
+
+  if (flags.is_overdue === true) {
+    reasons.push({
+      title: "Invoice is overdue",
+      detail: "The due date is before today's date.",
+    });
+  }
+
+  if (flags.balances_reconcile === false) {
+    reasons.push({
+      title: "Bank statement balance mismatch",
+      detail: "Opening balance plus credits minus debits does not match the closing balance.",
+    });
+  }
+
+  if (flags.has_large_transactions === true) {
+    reasons.push({
+      title: "Large transaction found",
+      detail: "At least one transaction is above the configured review threshold.",
+    });
+  }
+
+  if (flags.dates_are_sequential === false) {
+    reasons.push({
+      title: "Transaction dates out of order",
+      detail: "The transaction dates are not sequential.",
+    });
+  }
+
+  if (flags.dti_exceeds_threshold === true) {
+    const dti = typeof flags.debt_to_income_ratio === "number" ? ` DTI: ${Math.round(flags.debt_to_income_ratio * 100)}%.` : "";
+    reasons.push({
+      title: "Debt-to-income too high",
+      detail: `The applicant's debt-to-income ratio exceeds the configured threshold.${dti}`,
+    });
+  }
+
+  if (flags.age_meets_minimum === false) {
+    reasons.push({
+      title: "Applicant age below minimum",
+      detail: "The applicant does not meet the minimum age requirement.",
+    });
+  }
+
+  if (Array.isArray(flags.missing_required_fields) && flags.missing_required_fields.length > 0) {
+    reasons.push({
+      title: "Missing required fields",
+      detail: listValue(flags.missing_required_fields),
+    });
+  }
+
+  if (flags.income_supports_loan === false) {
+    reasons.push({
+      title: "Income does not support loan",
+      detail: "Estimated monthly payment is too high relative to monthly income.",
+    });
+  }
+
+  if (Array.isArray(flags.low_confidence_fields) && flags.low_confidence_fields.length > 0) {
+    reasons.push({
+      title: "Low confidence fields",
+      detail: listValue(flags.low_confidence_fields),
+    });
+  }
+
+  return reasons;
 }
 
 function getFieldRows(source: unknown): FieldRow[] {
@@ -99,6 +215,32 @@ function statusTone(record: JsonRecord) {
 function humanState(record: JsonRecord) {
   if (typeof record.state === "string") return formatLabel(record.state);
   return record.needs_review === 1 || record.needs_review === true ? "Needs Review" : "Approved";
+}
+
+function ReviewReasons({ source }: { source: unknown }) {
+  const reasons = getReviewReasons(source);
+
+  if (reasons.length === 0) {
+    return (
+      <div className="rounded border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+        No review reasons were found for this document.
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded border border-amber-200 bg-amber-50 p-4">
+      <h3 className="text-sm font-semibold text-amber-950">Review reasons</h3>
+      <div className="mt-3 flex flex-col gap-2">
+        {reasons.map((reason) => (
+          <div key={`${reason.title}-${reason.detail}`} className="rounded border border-amber-200 bg-white p-3">
+            <p className="text-sm font-semibold text-neutral-950">{reason.title}</p>
+            <p className="mt-1 text-sm text-neutral-700">{reason.detail}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function FieldTable({ source }: { source: unknown }) {
@@ -181,6 +323,11 @@ function JobList({
                   {humanState(job)}
                 </span>
               </div>
+              {getReviewReasons(job).length > 0 && (
+                <p className="mt-3 line-clamp-2 text-xs leading-5 text-amber-800">
+                  {getReviewReasons(job).map((reason) => reason.title).join("; ")}
+                </p>
+              )}
             </button>
           ))
         )}
@@ -434,6 +581,8 @@ export default function Home() {
                 )}
               </div>
             </div>
+
+            {selectedRecord && <ReviewReasons source={selectedRecord} />}
 
             <FieldTable source={result.data} />
 
