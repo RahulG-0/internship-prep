@@ -1,0 +1,79 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 902 >>
+stream
+BT
+/F1 10 Tf
+14 TL
+50 800 Td
+(DOCUMENT TYPE: LOAN APPLICATION - RULE PASS SAMPLE) Tj
+T*
+(Full Name: Emily Carter) Tj
+T*
+(Date of Birth: 1992-08-14) Tj
+T*
+(SIN: 999 888 321) Tj
+T*
+(Address: 25 Bay Street, Toronto ON) Tj
+T*
+(Phone: 416-555-0199) Tj
+T*
+(Email: emily.carter@example.com) Tj
+T*
+(Employment Status: employed) Tj
+T*
+(Employer Name: Maple Analytics) Tj
+T*
+(Job Title: Senior Analyst) Tj
+T*
+(Years Employed: 5) Tj
+T*
+(Annual Income: 96000.00) Tj
+T*
+(Loan Amount Requested: 18000.00) Tj
+T*
+(Loan Purpose: home renovation) Tj
+T*
+(Loan Term Months: 60) Tj
+T*
+(Collateral: none) Tj
+T*
+(Monthly Expenses: 2400.00) Tj
+T*
+(Existing Monthly Debt: 800.00) Tj
+T*
+(Self Reported Credit Score: 742) Tj
+T*
+(Number Of Dependents: 1) Tj
+T*
+(Has Co Applicant: false) Tj
+T*
+(Expected result: approved. Applicant is adult, DTI is below threshold, required fields are present, and income supports the loan.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1264
+%%EOF

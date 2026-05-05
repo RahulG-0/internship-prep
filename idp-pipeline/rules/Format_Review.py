@@ -68,10 +68,9 @@ class RulesEngine:
             due_date_str = data.due_date.value
             if due_date_str:
                 due_date = date.fromisoformat(due_date_str)
-                # flags["is_overdue"] = due_date < date.today()
-                # if flags["is_overdue"]:
-                #     needs_review = True
-                flags["is_overdue"] = False  # disabled for testing
+                flags["is_overdue"] = due_date < date.today()
+                if flags["is_overdue"]:
+                    needs_review = True
             else:
                 flags["is_overdue"] = False
         except Exception:
